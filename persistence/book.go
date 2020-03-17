@@ -27,36 +27,6 @@ var allBooks = []*book.Book{
 	&book.Book{ID: 19, Title: "King With Sins", Author: "Joshua Bezaleel Abednego"},
 }
 
-var booksTopics = map[int][]int{
-	0:  []int{1},
-	1:  []int{1},
-	2:  []int{1, 2},
-	3:  []int{1, 4},
-	4:  []int{2},
-	5:  []int{2, 3},
-	6:  []int{2},
-	7:  []int{2},
-	8:  []int{2},
-	9:  []int{2},
-	10: []int{2, 4},
-	11: []int{3, 1},
-	12: []int{3},
-	13: []int{3},
-	14: []int{3, 4},
-	15: []int{4},
-	16: []int{4},
-	17: []int{4},
-	18: []int{4},
-	19: []int{4},
-}
-
-var allTopics = map[int]string{
-	1: "Fantasy",
-	2: "Crime",
-	3: "Psychology",
-	4: "Law",
-}
-
 type bookRepository struct{}
 
 // NewBookRepository returns initialized implementations of the repository for
@@ -65,44 +35,12 @@ func NewBookRepository() book.Repository {
 	return &bookRepository{}
 }
 
-func (repo *bookRepository) GetAll(topicIDs []int) ([]*book.Book, error) {
+func (repo *bookRepository) GetAll() ([]*book.Book, error) {
 	var books []*book.Book
 
-	if len(topicIDs) != 4 {
-		for bookID, bookTopicIDs := range booksTopics {
-			if haveTopic(bookTopicIDs, topicIDs) {
-				books = append(books, allBooks[bookID])
-			}
-		}
-	} else {
-		books = allBooks
+	for _, eachBook := range allBooks {
+		books = append(books, eachBook)
 	}
 
 	return books, nil
-}
-
-func (repo *bookRepository) GetBookTopicIDs(bookID int) ([]int, error) {
-	return booksTopics[bookID], nil
-}
-
-func (repo *bookRepository) GetTopicsByID(topicIDs []int) ([]string, error) {
-	var topics []string
-
-	for _, topicID := range topicIDs {
-		topics = append(topics, allTopics[topicID])
-	}
-
-	return topics, nil
-}
-
-func haveTopic(bookTopicIDs []int, topicIDs []int) bool {
-	for _, bookTopicID := range bookTopicIDs {
-		for _, topicID := range topicIDs {
-			if bookTopicID == topicID {
-				return true
-			}
-		}
-	}
-
-	return false
 }
