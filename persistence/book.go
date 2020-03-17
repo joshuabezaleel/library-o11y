@@ -1,6 +1,8 @@
 package persistence
 
 import (
+	"errors"
+
 	"github.com/joshuabezaleel/library-o11y/book"
 )
 
@@ -43,4 +45,12 @@ func (repo *bookRepository) GetAll() ([]*book.Book, error) {
 	}
 
 	return books, nil
+}
+
+func (repo *bookRepository) Get(bookID int) (*book.Book, error) {
+	if bookID > len(allBooks)-1 {
+		return nil, errors.New("Book not found")
+	}
+
+	return allBooks[bookID], nil
 }
