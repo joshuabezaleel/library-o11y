@@ -1,6 +1,7 @@
 package book
 
 import (
+	"context"
 	"errors"
 
 	"github.com/joshuabezaleel/library-o11y/log"
@@ -16,8 +17,8 @@ var (
 
 // Service provides basic operations on Book domain model.
 type Service interface {
-	GetAll() ([]*Book, error)
-	Get(bookID int) (*Book, error)
+	GetAll(ctx context.Context) ([]*Book, error)
+	Get(ctx context.Context, bookID int) (*Book, error)
 }
 
 type service struct {
@@ -35,8 +36,8 @@ func NewBookService(bookRepository Repository, logger *log.Logger) Service {
 	}
 }
 
-func (s *service) GetAll() ([]*Book, error) {
-	books, err := s.bookRepository.GetAll()
+func (s *service) GetAll(ctx context.Context) ([]*Book, error) {
+	books, err := s.bookRepository.GetAll(ctx)
 	if err != nil {
 		logrus.Error(ErrGetAll)
 		return nil, ErrGetAll
@@ -45,8 +46,8 @@ func (s *service) GetAll() ([]*Book, error) {
 	return books, nil
 }
 
-func (s *service) Get(bookID int) (*Book, error) {
-	retrievedBook, err := s.bookRepository.Get(bookID)
+func (s *service) Get(ctx context.Context, bookID int) (*Book, error) {
+	retrievedBook, err := s.bookRepository.Get(ctx, bookID)
 	if err != nil {
 		logrus.Errorf("%s ID: %v", ErrGetBook, bookID)
 		return nil, ErrGetBook

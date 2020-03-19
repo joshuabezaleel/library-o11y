@@ -43,7 +43,7 @@ func (handler *bookHandler) getAllBooks(w http.ResponseWriter, r *http.Request) 
 		ctx = context.Background()
 	}
 
-	books, err := handler.bookService.GetAll()
+	books, err := handler.bookService.GetAll(ctx)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
@@ -73,7 +73,7 @@ func (handler *bookHandler) getBook(w http.ResponseWriter, r *http.Request) {
 
 	logrus.Infof("getBook %v \n", bookID)
 
-	retrievedBook, err := handler.bookService.Get(bookID)
+	retrievedBook, err := handler.bookService.Get(ctx, bookID)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return

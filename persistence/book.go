@@ -1,6 +1,7 @@
 package persistence
 
 import (
+	"context"
 	"errors"
 
 	"github.com/joshuabezaleel/library-o11y/book"
@@ -42,7 +43,7 @@ func NewBookRepository(logger *log.Logger) book.Repository {
 	}
 }
 
-func (repo *bookRepository) GetAll() ([]*book.Book, error) {
+func (repo *bookRepository) GetAll(ctx context.Context) ([]*book.Book, error) {
 	var books []*book.Book
 
 	for _, eachBook := range allBooks {
@@ -52,8 +53,8 @@ func (repo *bookRepository) GetAll() ([]*book.Book, error) {
 	return books, nil
 }
 
-func (repo *bookRepository) Get(bookID int) (*book.Book, error) {
-	if bookID > len(allBooks)-1 {
+func (repo *bookRepository) Get(ctx context.Context, bookID int) (*book.Book, error) {
+	if allBooks[bookID] == nil {
 		return nil, errors.New("Book not found")
 	}
 
