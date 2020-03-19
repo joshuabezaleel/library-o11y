@@ -20,9 +20,10 @@ type Server struct {
 
 // NewServer returns a new Book HTTP server
 // with all of the necessary dependencies.
-func NewServer(bookService book.Service) *Server {
+func NewServer(bookService book.Service, logger *log.Logger) *Server {
 	server := &Server{
 		bookService: bookService,
+		Logger:      logger,
 	}
 
 	bookHandler := bookHandler{bookService}
@@ -33,8 +34,6 @@ func NewServer(bookService book.Service) *Server {
 
 	server.Router = router
 
-	server.Logger = log.NewLogger()
-
 	return server
 }
 
@@ -42,13 +41,13 @@ func NewServer(bookService book.Service) *Server {
 func (srv *Server) Run(port string) {
 	port = ":" + port
 
-	// srv.Logger.Info("bookService is running on port " + port)
 	srv.Logger.Log.WithFields(log.Fields{
 		"service": "bookService",
 		"port":    port,
 	}).Info("bookService is running")
+
 	err := http.ListenAndServe(port, srv.Router)
 	if err != nil {
-		panic(err)
+		srv.Logger.Log.Panic(err)
 	}
 }

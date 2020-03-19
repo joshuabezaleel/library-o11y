@@ -1,9 +1,12 @@
 package server
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"strconv"
+
+	"github.com/sirupsen/logrus"
 
 	"github.com/joshuabezaleel/library-o11y/book"
 
@@ -35,11 +38,18 @@ func (handler *bookHandler) metrics(w http.ResponseWriter, r *http.Request) {
 }
 
 func (handler *bookHandler) getAllBooks(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
 	books, err := handler.bookService.GetAll()
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
+
+	logrus.Info("getAllBooks")
 
 	getAllBooksCounter.Inc()
 
@@ -47,6 +57,11 @@ func (handler *bookHandler) getAllBooks(w http.ResponseWriter, r *http.Request) 
 }
 
 func (handler *bookHandler) getBook(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
 	vars := mux.Vars(r)
 	bookIDString, ok := vars["ID"]
 	if !ok {
@@ -55,6 +70,8 @@ func (handler *bookHandler) getBook(w http.ResponseWriter, r *http.Request) {
 	}
 
 	bookID, _ := strconv.Atoi(bookIDString)
+
+	logrus.Infof("getBook %v \n", bookID)
 
 	retrievedBook, err := handler.bookService.Get(bookID)
 	if err != nil {

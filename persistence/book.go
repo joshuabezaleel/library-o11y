@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/joshuabezaleel/library-o11y/book"
+	"github.com/joshuabezaleel/library-o11y/log"
 )
 
 var allBooks = []*book.Book{
@@ -29,12 +30,16 @@ var allBooks = []*book.Book{
 	&book.Book{ID: 19, Title: "King With Sins", Author: "Joshua Bezaleel Abednego"},
 }
 
-type bookRepository struct{}
+type bookRepository struct {
+	logger *log.Logger
+}
 
 // NewBookRepository returns initialized implementations of the repository for
 // Book domain model.
-func NewBookRepository() book.Repository {
-	return &bookRepository{}
+func NewBookRepository(logger *log.Logger) book.Repository {
+	return &bookRepository{
+		logger: logger,
+	}
 }
 
 func (repo *bookRepository) GetAll() ([]*book.Book, error) {

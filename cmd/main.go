@@ -2,17 +2,18 @@ package main
 
 import (
 	"github.com/joshuabezaleel/library-o11y/book"
+	"github.com/joshuabezaleel/library-o11y/log"
 	"github.com/joshuabezaleel/library-o11y/persistence"
 	"github.com/joshuabezaleel/library-o11y/server"
 )
 
 func main() {
-	// var log = logrus.New()
+	logger := log.NewLogger()
 
-	bookRepository := persistence.NewBookRepository()
+	bookRepository := persistence.NewBookRepository(logger)
 
-	bookService := book.NewBookService(bookRepository)
+	bookService := book.NewBookService(bookRepository, logger)
 
-	srv := server.NewServer(bookService)
+	srv := server.NewServer(bookService, logger)
 	srv.Run("8082")
 }
