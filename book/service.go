@@ -5,8 +5,6 @@ import (
 	"errors"
 
 	"github.com/joshuabezaleel/library-o11y/log"
-
-	"github.com/sirupsen/logrus"
 )
 
 // Errors definition.
@@ -39,9 +37,11 @@ func NewBookService(bookRepository Repository, logger *log.Logger) Service {
 func (s *service) GetAll(ctx context.Context) ([]*Book, error) {
 	books, err := s.bookRepository.GetAll(ctx)
 	if err != nil {
-		logrus.Error(ErrGetAll)
+		s.logger.Log.Error("Error: Service GetAll")
 		return nil, ErrGetAll
 	}
+
+	s.logger.Log.Debug("Service GetAll")
 
 	return books, nil
 }
@@ -49,9 +49,11 @@ func (s *service) GetAll(ctx context.Context) ([]*Book, error) {
 func (s *service) Get(ctx context.Context, bookID int) (*Book, error) {
 	retrievedBook, err := s.bookRepository.Get(ctx, bookID)
 	if err != nil {
-		logrus.Errorf("%s ID: %v", ErrGetBook, bookID)
+		s.logger.Log.Errorf("%s ID %v", ErrGetBook, bookID)
 		return nil, ErrGetBook
 	}
+
+	s.logger.Log.Debugf("Service Get ID %v", bookID)
 
 	return retrievedBook, nil
 }

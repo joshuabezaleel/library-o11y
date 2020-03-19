@@ -6,9 +6,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/sirupsen/logrus"
-
 	"github.com/joshuabezaleel/library-o11y/book"
+	"github.com/joshuabezaleel/library-o11y/log"
 
 	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus"
@@ -25,6 +24,8 @@ var (
 
 type bookHandler struct {
 	bookService book.Service
+
+	logger *log.Logger
 }
 
 func (handler *bookHandler) registerRouter(router *mux.Router) {
@@ -45,11 +46,12 @@ func (handler *bookHandler) getAllBooks(w http.ResponseWriter, r *http.Request) 
 
 	books, err := handler.bookService.GetAll(ctx)
 	if err != nil {
+		handler.logger.Log.Debug("Error GET /books")
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	logrus.Info("getAllBooks")
+	handler.logger.Log.Info("GET /books")
 
 	getAllBooksCounter.Inc()
 
@@ -71,10 +73,11 @@ func (handler *bookHandler) getBook(w http.ResponseWriter, r *http.Request) {
 
 	bookID, _ := strconv.Atoi(bookIDString)
 
-	logrus.Infof("getBook %v \n", bookID)
+	handler.logger.Log.Infof("GET /books/%v", bookID)
 
 	retrievedBook, err := handler.bookService.Get(ctx, bookID)
 	if err != nil {
+		handler.logger.Log.Debugf("Error GET /books/%v", bookID)
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}

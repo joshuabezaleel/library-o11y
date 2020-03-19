@@ -26,7 +26,7 @@ func NewServer(bookService book.Service, logger *log.Logger) *Server {
 		Logger:      logger,
 	}
 
-	bookHandler := bookHandler{bookService}
+	bookHandler := bookHandler{bookService, logger}
 
 	router := mux.NewRouter()
 

@@ -50,13 +50,18 @@ func (repo *bookRepository) GetAll(ctx context.Context) ([]*book.Book, error) {
 		books = append(books, eachBook)
 	}
 
+	repo.logger.Log.Debug("Query GetAll")
+
 	return books, nil
 }
 
 func (repo *bookRepository) Get(ctx context.Context, bookID int) (*book.Book, error) {
-	if allBooks[bookID] == nil {
+	if bookID > len(allBooks)-1 || allBooks[bookID] == nil {
+		repo.logger.Log.Errorf("Error: Query Get ID %v", bookID)
 		return nil, errors.New("Book not found")
 	}
+
+	repo.logger.Log.Debugf("Query Get ID %v", bookID)
 
 	return allBooks[bookID], nil
 }
