@@ -8,7 +8,16 @@ import (
 	"github.com/joshuabezaleel/library-o11y/book"
 
 	"github.com/gorilla/mux"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+)
+
+var (
+	getAllBooksCounter = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "getAllBooks_total",
+		Help: "Total number of processed getAllBooks hit",
+	})
 )
 
 type bookHandler struct {
@@ -32,11 +41,7 @@ func (handler *bookHandler) getAllBooks(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	// getAllBooksCounter := promauto.NewCounter(prometheus.CounterOpts{
-	// 	Name: "getAllBooks_total",
-	// 	Help: "Total number of processed getAllBooks hit",
-	// })
-	// getAllBooksCounter.Inc()
+	getAllBooksCounter.Inc()
 
 	respondWithJSON(w, http.StatusOK, books)
 }

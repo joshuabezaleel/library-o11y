@@ -7,6 +7,8 @@ import (
 )
 
 func main() {
+	// var log = logrus.New()
+
 	bookRepository := persistence.NewBookRepository()
 
 	bookService := book.NewBookService(bookRepository)
