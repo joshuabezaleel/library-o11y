@@ -3,12 +3,14 @@ package server
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/joshuabezaleel/library-o11y/book"
 	"github.com/joshuabezaleel/library-o11y/log"
 
+	"github.com/fluent/fluent-logger-golang/fluent"
 	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
@@ -26,6 +28,8 @@ type bookHandler struct {
 	bookService book.Service
 
 	logger *log.Logger
+
+	fluentLogger *fluent.Fluent
 }
 
 func (handler *bookHandler) registerRouter(router *mux.Router) {
@@ -47,11 +51,13 @@ func (handler *bookHandler) getAllBooks(w http.ResponseWriter, r *http.Request) 
 	books, err := handler.bookService.GetAll(ctx)
 	if err != nil {
 		handler.logger.Log.Debug("Error GET /books")
+		handler.fluentLogger.Post("bookHandler", "Error GET /books")
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	handler.logger.Log.Info("GET /books")
+	handler.fluentLogger.Post("bookHandler", "GET /books")
 
 	getAllBooksCounter.Inc()
 
@@ -73,11 +79,17 @@ func (handler *bookHandler) getBook(w http.ResponseWriter, r *http.Request) {
 
 	bookID, _ := strconv.Atoi(bookIDString)
 
-	handler.logger.Log.Infof("GET /books/%v", bookID)
+	logMessage := fmt.Sprintf("GET /books/%v", bookID)
+	handler.logger.Log.Infof(logMessage)
+	handler.fluentLogger.Post("bookHandler", logMessage)
 
 	retrievedBook, err := handler.bookService.Get(ctx, bookID)
 	if err != nil {
-		handler.logger.Log.Debugf("Error GET /books/%v", bookID)
+		errorLogMessage := fmt.Sprintf("Error GET /books/%v", bookID)
+
+		handler.logger.Log.Debugf(errorLogMessage)
+		handler.fluentLogger.Post("bookHandler", errorLogMessage)
+
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}

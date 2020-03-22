@@ -3,9 +3,12 @@ package persistence
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/joshuabezaleel/library-o11y/book"
 	"github.com/joshuabezaleel/library-o11y/log"
+
+	"github.com/fluent/fluent-logger-golang/fluent"
 )
 
 var allBooks = []*book.Book{
@@ -33,13 +36,16 @@ var allBooks = []*book.Book{
 
 type bookRepository struct {
 	logger *log.Logger
+
+	fluentLogger *fluent.Fluent
 }
 
 // NewBookRepository returns initialized implementations of the repository for
 // Book domain model.
-func NewBookRepository(logger *log.Logger) book.Repository {
+func NewBookRepository(logger *log.Logger, fluentLogger *fluent.Fluent) book.Repository {
 	return &bookRepository{
-		logger: logger,
+		logger:       logger,
+		fluentLogger: fluentLogger,
 	}
 }
 
@@ -51,6 +57,7 @@ func (repo *bookRepository) GetAll(ctx context.Context) ([]*book.Book, error) {
 	}
 
 	repo.logger.Log.Debug("Query GetAll")
+	repo.fluentLogger.Post("repository", "Query GetAll")
 
 	return books, nil
 }
@@ -61,7 +68,9 @@ func (repo *bookRepository) Get(ctx context.Context, bookID int) (*book.Book, er
 		return nil, errors.New("Book not found")
 	}
 
-	repo.logger.Log.Debugf("Query Get ID %v", bookID)
+	logMessage := fmt.Sprintf("Query Get ID %v", bookID)
+	repo.logger.Log.Debugf(logMessage)
+	repo.fluentLogger.Post("repository", logMessage)
 
 	return allBooks[bookID], nil
 }

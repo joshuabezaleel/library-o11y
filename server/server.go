@@ -6,6 +6,7 @@ import (
 	"github.com/joshuabezaleel/library-o11y/book"
 	"github.com/joshuabezaleel/library-o11y/log"
 
+	"github.com/fluent/fluent-logger-golang/fluent"
 	"github.com/gorilla/mux"
 )
 
@@ -16,17 +17,20 @@ type Server struct {
 	Router *mux.Router
 
 	Logger *log.Logger
+
+	FluentLogger *fluent.Fluent
 }
 
 // NewServer returns a new Book HTTP server
 // with all of the necessary dependencies.
-func NewServer(bookService book.Service, logger *log.Logger) *Server {
+func NewServer(bookService book.Service, logger *log.Logger, fluentLogger *fluent.Fluent) *Server {
 	server := &Server{
-		bookService: bookService,
-		Logger:      logger,
+		bookService:  bookService,
+		Logger:       logger,
+		FluentLogger: fluentLogger,
 	}
 
-	bookHandler := bookHandler{bookService, logger}
+	bookHandler := bookHandler{bookService, logger, fluentLogger}
 
 	router := mux.NewRouter()
 
@@ -45,6 +49,7 @@ func (srv *Server) Run(port string) {
 		"service": "bookService",
 		"port":    port,
 	}).Info("bookService is running")
+	srv.FluentLogger.Post("server", "bookService running on :8082")
 
 	err := http.ListenAndServe(port, srv.Router)
 	if err != nil {

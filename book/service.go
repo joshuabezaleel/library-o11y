@@ -3,6 +3,9 @@ package book
 import (
 	"context"
 	"errors"
+	"fmt"
+
+	"github.com/fluent/fluent-logger-golang/fluent"
 
 	"github.com/joshuabezaleel/library-o11y/log"
 )
@@ -23,14 +26,17 @@ type service struct {
 	bookRepository Repository
 
 	logger *log.Logger
+
+	fluentLogger *fluent.Fluent
 }
 
 // NewBookService creates an instance of the service for the Book domain model
 // with all of the necessary dependencies.
-func NewBookService(bookRepository Repository, logger *log.Logger) Service {
+func NewBookService(bookRepository Repository, logger *log.Logger, fluentLogger *fluent.Fluent) Service {
 	return &service{
 		bookRepository: bookRepository,
 		logger:         logger,
+		fluentLogger:   fluentLogger,
 	}
 }
 
@@ -42,6 +48,7 @@ func (s *service) GetAll(ctx context.Context) ([]*Book, error) {
 	}
 
 	s.logger.Log.Debug("Service GetAll")
+	s.fluentLogger.Post("service", "GetAll")
 
 	return books, nil
 }
@@ -53,7 +60,9 @@ func (s *service) Get(ctx context.Context, bookID int) (*Book, error) {
 		return nil, ErrGetBook
 	}
 
-	s.logger.Log.Debugf("Service Get ID %v", bookID)
+	logMessage := fmt.Sprintf("Service Get ID %v", bookID)
+	s.logger.Log.Debugf(logMessage)
+	s.fluentLogger.Post("service", logMessage)
 
 	return retrievedBook, nil
 }
