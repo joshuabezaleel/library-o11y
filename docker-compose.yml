@@ -1,5 +1,15 @@
 version: "3"
 services:
+  fluentd:
+    build: ./fluentd
+    volumes:
+      - ./fluentd/conf:/fluentd/etc
+    links:
+      - "elasticsearch"
+    ports:
+      - "24224:24224"
+      - "24224:24224/udp"
+
   book-service:
     build: .
     image: book-service
@@ -10,16 +20,9 @@ services:
       options:
         fluentd-address: localhost:24224
         tag: book-service.access
-
-  fluentd:
-    build: ./fluentd
-    volumes:
-      - ./fluentd/conf:/fluentd/etc
-    links:
-      - "elasticsearch"
-    ports:
-      - "24224:24224"
-      - "24224:24224/udp"
+        fluentd-async-connect: "true"
+    depends_on:
+      - fluentd
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.2.0

@@ -11,10 +11,11 @@ import (
 )
 
 func main() {
+	// time.Sleep(5 * time.Second)
 	logger := log.NewLogger()
 	logger.Log.SetFormatter(&logrus.JSONFormatter{})
 
-	fluentLogger, err := fluent.New(fluent.Config{FluentPort: 9880, FluentHost: "127.0.0.1"})
+	fluentLogger, err := fluent.New(fluent.Config{FluentPort: 24224, FluentHost: "fluentd"})
 	if err != nil {
 		logger.Log.Fatal(err)
 	}
