@@ -1,13 +1,20 @@
 package main
 
 import (
+	"io"
+
 	"github.com/joshuabezaleel/library-o11y/book"
 	"github.com/joshuabezaleel/library-o11y/log"
 	"github.com/joshuabezaleel/library-o11y/persistence"
 	"github.com/joshuabezaleel/library-o11y/server"
 
 	"github.com/fluent/fluent-logger-golang/fluent"
+	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/sirupsen/logrus"
+	jaeger "github.com/uber/jaeger-client-go"
+	config "github.com/uber/jaeger-client-go/config"
+	jaegerlog "github.com/uber/jaeger-client-go/log"
+	jaegermetrics "github.com/uber/jaeger-lib/metrics"
 )
 
 func main() {
@@ -21,10 +28,41 @@ func main() {
 	}
 	defer fluentLogger.Close()
 
+	tracer, closer := initJaeger("book-service")
+	defer closer.Close()
+
+	opentracing.SetGlobalTracer(tracer)
+	tracer = opentracing.GlobalTracer()
+	span := tracer.StartSpan("test-tracer")
+	defer span.Finish()
+
 	bookRepository := persistence.NewBookRepository(logger, fluentLogger)
 
 	bookService := book.NewBookService(bookRepository, logger, fluentLogger)
 
 	srv := server.NewServer(bookService, logger, fluentLogger)
 	srv.Run("8082")
+}
+
+func initJaeger(service string) (opentracing.Tracer, io.Closer) {
+	cfg := &config.Configuration{
+		ServiceName: service,
+		Sampler: &config.SamplerConfig{
+			Type:  jaeger.SamplerTypeConst,
+			Param: 1,
+		},
+		Reporter: &config.ReporterConfig{
+			LogSpans: true,
+		},
+	}
+
+	jLogger := jaegerlog.StdLogger
+	jMetricsFactory := jaegermetrics.NullFactory
+
+	tracer, closer, err := cfg.NewTracer(config.Logger(jLogger), config.Metrics(jMetricsFactory))
+	if err != nil {
+		panic(err)
+	}
+
+	return tracer, closer
 }
