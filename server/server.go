@@ -6,6 +6,7 @@ import (
 
 	"github.com/joshuabezaleel/library-o11y/book"
 	"github.com/joshuabezaleel/library-o11y/log"
+	opentracing "github.com/opentracing/opentracing-go"
 
 	"github.com/fluent/fluent-logger-golang/fluent"
 	"github.com/gorilla/mux"
@@ -13,7 +14,8 @@ import (
 
 // Server holds dependencies for the Book HTTP server.
 type Server struct {
-	ctx context.Context
+	ctx    context.Context
+	tracer opentracing.Tracer
 
 	bookService book.Service
 
@@ -26,15 +28,16 @@ type Server struct {
 
 // NewServer returns a new Book HTTP server
 // with all of the necessary dependencies.
-func NewServer(ctx context.Context, bookService book.Service, logger *log.Logger, fluentLogger *fluent.Fluent) *Server {
+func NewServer(ctx context.Context, tracer opentracing.Tracer, bookService book.Service, logger *log.Logger, fluentLogger *fluent.Fluent) *Server {
 	server := &Server{
 		ctx:          ctx,
+		tracer:       tracer,
 		bookService:  bookService,
 		Logger:       logger,
 		FluentLogger: fluentLogger,
 	}
 
-	bookHandler := bookHandler{ctx, bookService, logger, fluentLogger}
+	bookHandler := bookHandler{ctx, tracer, bookService, logger, fluentLogger}
 
 	router := mux.NewRouter()
 

@@ -12,6 +12,8 @@ import (
 
 	"github.com/fluent/fluent-logger-golang/fluent"
 	"github.com/gorilla/mux"
+	opentracing "github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go/ext"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -25,7 +27,8 @@ var (
 )
 
 type bookHandler struct {
-	ctx context.Context
+	ctx    context.Context
+	tracer opentracing.Tracer
 
 	bookService book.Service
 
@@ -45,6 +48,10 @@ func (handler *bookHandler) metrics(w http.ResponseWriter, r *http.Request) {
 }
 
 func (handler *bookHandler) getAllBooks(w http.ResponseWriter, r *http.Request) {
+	spanCtx, _ := handler.tracer.Extract(opentracing.HTTPHeaders, opentracing.HTTPHeadersCarrier(r.Header))
+	span := handler.tracer.StartSpan("getAllBooks", ext.RPCServerOption(spanCtx))
+	defer span.Finish()
+
 	ctx := r.Context()
 	if ctx == nil {
 		ctx = context.Background()
@@ -60,6 +67,7 @@ func (handler *bookHandler) getAllBooks(w http.ResponseWriter, r *http.Request) 
 
 	handler.logger.Log.Info("GET /books")
 	handler.fluentLogger.Post("bookHandler", "GET /books")
+	span.LogKV("bookHandler", "getAllBooks")
 
 	getAllBooksCounter.Inc()
 

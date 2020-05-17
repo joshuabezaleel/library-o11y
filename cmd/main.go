@@ -43,7 +43,7 @@ func main() {
 
 	bookService := book.NewBookService(ctx, bookRepository, logger, fluentLogger)
 
-	srv := server.NewServer(ctx, bookService, logger, fluentLogger)
+	srv := server.NewServer(ctx, tracer, bookService, logger, fluentLogger)
 	srv.Run("8082")
 }
 
