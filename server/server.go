@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/joshuabezaleel/library-o11y/book"
@@ -12,6 +13,8 @@ import (
 
 // Server holds dependencies for the Book HTTP server.
 type Server struct {
+	ctx context.Context
+
 	bookService book.Service
 
 	Router *mux.Router
@@ -23,14 +26,15 @@ type Server struct {
 
 // NewServer returns a new Book HTTP server
 // with all of the necessary dependencies.
-func NewServer(bookService book.Service, logger *log.Logger, fluentLogger *fluent.Fluent) *Server {
+func NewServer(ctx context.Context, bookService book.Service, logger *log.Logger, fluentLogger *fluent.Fluent) *Server {
 	server := &Server{
+		ctx:          ctx,
 		bookService:  bookService,
 		Logger:       logger,
 		FluentLogger: fluentLogger,
 	}
 
-	bookHandler := bookHandler{bookService, logger, fluentLogger}
+	bookHandler := bookHandler{ctx, bookService, logger, fluentLogger}
 
 	router := mux.NewRouter()
 

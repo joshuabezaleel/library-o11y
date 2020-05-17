@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"io"
 
 	"github.com/joshuabezaleel/library-o11y/book"
@@ -36,11 +37,13 @@ func main() {
 	span := tracer.StartSpan("test-tracer")
 	defer span.Finish()
 
-	bookRepository := persistence.NewBookRepository(logger, fluentLogger)
+	ctx := opentracing.ContextWithSpan(context.Background(), span)
 
-	bookService := book.NewBookService(bookRepository, logger, fluentLogger)
+	bookRepository := persistence.NewBookRepository(ctx, logger, fluentLogger)
 
-	srv := server.NewServer(bookService, logger, fluentLogger)
+	bookService := book.NewBookService(ctx, bookRepository, logger, fluentLogger)
+
+	srv := server.NewServer(ctx, bookService, logger, fluentLogger)
 	srv.Run("8082")
 }
 

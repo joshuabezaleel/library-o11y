@@ -25,6 +25,8 @@ var (
 )
 
 type bookHandler struct {
+	ctx context.Context
+
 	bookService book.Service
 
 	logger *log.Logger

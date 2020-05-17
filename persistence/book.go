@@ -35,6 +35,8 @@ var allBooks = []*book.Book{
 }
 
 type bookRepository struct {
+	ctx context.Context
+
 	logger *log.Logger
 
 	fluentLogger *fluent.Fluent
@@ -42,8 +44,9 @@ type bookRepository struct {
 
 // NewBookRepository returns initialized implementations of the repository for
 // Book domain model.
-func NewBookRepository(logger *log.Logger, fluentLogger *fluent.Fluent) book.Repository {
+func NewBookRepository(ctx context.Context, logger *log.Logger, fluentLogger *fluent.Fluent) book.Repository {
 	return &bookRepository{
+		ctx:          ctx,
 		logger:       logger,
 		fluentLogger: fluentLogger,
 	}

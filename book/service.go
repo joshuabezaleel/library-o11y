@@ -23,6 +23,8 @@ type Service interface {
 }
 
 type service struct {
+	ctx context.Context
+
 	bookRepository Repository
 
 	logger *log.Logger
@@ -32,8 +34,9 @@ type service struct {
 
 // NewBookService creates an instance of the service for the Book domain model
 // with all of the necessary dependencies.
-func NewBookService(bookRepository Repository, logger *log.Logger, fluentLogger *fluent.Fluent) Service {
+func NewBookService(ctx context.Context, bookRepository Repository, logger *log.Logger, fluentLogger *fluent.Fluent) Service {
 	return &service{
+		ctx:            ctx,
 		bookRepository: bookRepository,
 		logger:         logger,
 		fluentLogger:   fluentLogger,
