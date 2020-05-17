@@ -75,6 +75,10 @@ func (handler *bookHandler) getAllBooks(w http.ResponseWriter, r *http.Request) 
 }
 
 func (handler *bookHandler) getBook(w http.ResponseWriter, r *http.Request) {
+	spanCtx, _ := handler.tracer.Extract(opentracing.HTTPHeaders, opentracing.HTTPHeadersCarrier(r.Header))
+	span := handler.tracer.StartSpan("getBook", ext.RPCServerOption(spanCtx))
+	defer span.Finish()
+
 	ctx := r.Context()
 	if ctx == nil {
 		ctx = context.Background()
@@ -92,6 +96,7 @@ func (handler *bookHandler) getBook(w http.ResponseWriter, r *http.Request) {
 	logMessage := fmt.Sprintf("GET /books/%v", bookID)
 	handler.logger.Log.Infof(logMessage)
 	handler.fluentLogger.Post("bookHandler", logMessage)
+	span.LogKV("bookHandler", "getBook")
 
 	retrievedBook, err := handler.bookService.Get(ctx, bookID)
 	if err != nil {
